@@ -2,7 +2,7 @@ body{
     display:flex;
     flex-direction:column;
     padding:none;
-    background-color: rgb(190, 190, 190);
+    background-color: #818080;
 }
 
 header{
@@ -53,7 +53,6 @@ input#search{
     display: flex;
     flex-direction: row;
     height: calc(100vh - 85px);
-    gap:2%;
     align-items: stretch;
     position: relative;
     width: auto ;
@@ -62,7 +61,7 @@ input#search{
 #navbar{
     display:flex;
     flex-direction:row;
-    width:25%;
+    width:30%;
     background-color:transparent;
 }
 
@@ -82,6 +81,8 @@ input#search{
 #second-lv{
     width:100%;
     padding-top: 20px;
+    padding-right:6%;
+    padding-left:6%;
 }
 
 #dispA{
@@ -101,7 +102,7 @@ input#search{
 
 #first-lv #standard button{
     height: 23%;
-    width: 80%;
+    width: 100%;
     border: transparent;
     border-radius: 100%;
 
@@ -109,14 +110,14 @@ input#search{
 
 #first-lv #addable button{
     height:17%;
-    width: 80%;
+    width: 100%;
     border: transparent;
     border-radius: 100%;    
 }
 
 #first-lv #navfooter button{
     height: 95%;
-    width: 80%;
+    width: 100%;
     border: transparent;
     border-radius: 100%;
 }
@@ -155,12 +156,11 @@ input#search{
     display:flex;
     flex-direction:row;
     width:100%;
-    padding:1%;
 }
 
 #main{
     flex: 1;
-    background:transparents;
+    background-color: rgb(190, 190, 190);
     border-radius: 8px;
     overflow-y: auto;
     position: relative;
@@ -211,9 +211,10 @@ input#search{
 }
 
 .card-horizontal img {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     object-fit: cover;
+    border-radius:100%;
 }
 
 .card-horizontal span {
@@ -226,7 +227,7 @@ input#search{
     border: none;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 10%;
     position: absolute;
     right: 16px;
     display: flex;
@@ -271,16 +272,16 @@ input#search{
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 100%;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
 
 .play-badge {
-    background-color: #1db954;
+    background-color: #a36a6a;
     border: none;
     width: 48px;
     height: 48px;
-    border-radius: 50%;
+    border-radius: 10%;
     position: absolute;
     bottom: 8px;
     right: 8px;
@@ -311,7 +312,6 @@ input#search{
     font-size: 12px;
     line-height: 18px;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -319,9 +319,9 @@ input#search{
 /* --- BOTTOM PLAYER BAR --- */
 .player-bar {
     height: 90px;
-    background-color: #181818;
+    background-color: #818080;
     border-top: 1px solid #282828;
-    padding: 0 16px;
+    padding: 0 0.2%;
     display: flex;
     justify-content: space-between;
     align-items: center;
