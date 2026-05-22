@@ -41,6 +41,8 @@ header{
 input#search{
     height:60%;
     width:90%;
+    border-radius:20px;
+    border:none;
 }
 
 #search-form button{
