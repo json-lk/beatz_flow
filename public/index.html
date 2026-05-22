@@ -4,55 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>beatz_flow</title>
+    <link rel='stylesheet' href='index.css'>
 </head>
 <body>
     <header>
-        <logo></logo>
-        <account type="button" id="acc-button"></account>
-        <form>
-            <input type="text" placeholder="Search for music, artists, albums...">
+        <logo class='logo'>beatx-flow</logo>
+        <form id="search-form">
+            <input type="text" id='search' placeholder="Search for music, artists, albums..." >
             <button type="submit">Search</button>
         </form>
+        <account type="button" id="acc-button">
+            <button></button>
+        </account>
     </header>
     <main>
         <div class="navi" id="navbar">
             <div id="first-lv">
                 <div id='standard'>
-                    <button type='button' id="listen">Listen</button>
-                    <button type='button' id="contribute">Contribute</button>
+                    <button type='button' id="listen"></button>
+                    <button type='button' id="contribute"></button>
                 </div>
                 <div id='addable'>
-                    <button type='button' id="quicky">Add Music</button>
+                    <button type='button' id="quicky"></button>
                 </div>
                 <div id='navfooter'>
-                    <button type='button' id="settings">Settings</button>
-                    <button type="button" id="about">About</button>
+                    <button type='button' id="settings"></button>
                 </div>
             </div>
             <div id="second-lv">
-                <div id="listens">
-                    <div id="Standard">
+                <div class="listen-s" id="listen-s">
+                    <div id="standard">
                         <button type="button" id="my-music">My Music</button>
                         <button type="button" id="podcast">Podcast</button>
                         <button type="button" id="radio">Radio</button>
                         <button type="button" id="live">Live</button>
                         <button type="button" id="top-charts">Top Charts</button>
                     </div>
+                    <div id="addable">
+                    </div>
                 </div>
-                <div id="contributes">
-                    <button type="button" id="upload">Upload</button>
-                    <button type="button" id="collaborate">Collaborate</button>
+                <div class="contribute-s" id="contribute-s">
+                    <div id="standard">
+                        <button type="button" id="upload">Upload</button>
+                        <button type="button" id="manage-up">Manage My Uploads</button>
+                    </div>
+                    <div id="addable">
+
+                    </div>
                 </div>
-                <div id="navfooters">
+                <div class="settings-menu" id="settings-menu">
                     <button type="button" id="profile">Profile</button>
                     <button type="button" id="general-settings">General Settings</button>
                     <button type="button" id="help">Help</button>
                 </div>
             </div>
-        </navbar>
-        <dispA>
+        </div>
+        <div id='dispA'>
+            <p></p>
 
-        </dispA>
+        </div>
     </main>
 </body>
 </html>

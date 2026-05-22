@@ -1,0 +1,144 @@
+body{
+    display:flex;
+    flex-direction:column;
+    padding:none;
+    background-color: rgb(190, 190, 190);
+}
+
+header{
+    align-content:center;
+    display:flex;
+    height:calc(10vh);
+    position:sticky;
+    justify-content:space-between;
+    background-color: transparent;
+}
+
+.logo{
+    width:10%;
+    align-content:center;
+}
+
+
+#acc-button{
+    width:6%;
+    align-content:center;
+    right:40%;
+}
+
+#acc-button button{
+    height: 78%;
+    width: 96%;
+    border: transparent;
+    
+}
+
+#search-form{
+    width:80%;
+    align-content:center;
+}
+
+input#search{
+    height:60%;
+    width:90%;
+}
+
+#search-form button{
+    height:60%;
+}
+
+main{
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 85px);
+    gap:2%;
+    align-items: stretch;
+    position: relative;
+    width: auto ;
+}
+
+#navbar{
+    display:flex;
+    flex-direction:row;
+    width:25%;
+    background-color:transparent;
+}
+
+#first-lv,
+#second-lv{
+    display:flex;
+    flex-direction:column;
+    gap:5%;
+}
+
+#first-lv{
+    width:70px;
+    justify-content: space-between;
+}
+
+#second-lv{
+    width:100%;
+}
+
+#dispA{
+    background-color: #ffffff;
+    width:90%
+}
+
+
+#standard,
+#addable,
+#navfooter,
+#settings-menu{
+    display:flex;
+    flex-direction:column;
+    gap:3%;
+}
+
+#first-lv #standard button{
+    height: 23%;
+    width: 80%;
+    border: transparent;
+    border-radius: 100%;
+
+}
+
+#first-lv #addable button{
+    height:17%;
+    width: 80%;
+    border: transparent;
+    border-radius: 100%;    
+}
+
+#first-lv #navfooter button{
+    height: 95%;
+    width: 80%;
+    border: transparent;
+    border-radius: 100%;
+}
+
+#standard{
+    height:40%;
+}
+
+#addable{
+    height:55%;
+}
+
+#navfooter{
+    height:10%;
+}
+
+.listen-s button,
+.contribute-s button,
+.settings-menu button{
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 14px;
+    background-color: #dde4f0;
+    color: #111827;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
