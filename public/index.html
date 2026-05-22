@@ -11,12 +11,13 @@
         <logo class='logo'>beatx-flow</logo>
         <form id="search-form">
             <input type="text" id='search' placeholder="Search for music, artists, albums..." >
+            <button type="submit">Search</button>
         </form>
         <account type="button" id="acc-button">
             <button></button>
         </account>
     </header>
-    <main>
+    <main class="the-rest">
         <div class="navi" id="navbar">
             <div id="first-lv">
                 <div id='standard'>
@@ -58,10 +59,87 @@
                 </div>
             </div>
         </div>
-        <div id='dispA'>
-            <p></p>
+        <dispA class="main-content">
+            <div id="main">
+                <section class="content-section">
+                    <h2>Good afternoon</h2>
+                    <div class="grid-container">
+                        <div class="card-horizontal">
+                            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=150" alt="Album Art">
+                            <span>Liked Songs</span>
+                            <button class="play-hover"><i class="fa-solid fa-play"></i></button>
+                        </div>
+                        <div class="card-horizontal">
+                            <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150" alt="Album Art">
+                            <span>Coding Focus</span>
+                            <button class="play-hover"><i class="fa-solid fa-play"></i></button>
+                        </div>
+                    </div>
+                </section>
 
-        </div>
+                <section class="content-section">
+                    <h2>Made For You</h2>
+                    <div class="cards-grid">
+                        <div class="card-vertical">
+                            <div class="img-container">
+                                <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200" alt="Mix Cover">
+                                <button class="play-badge"><i class="fa-solid fa-play"></i></button>
+                            </div>
+                            <h3>Daily Mix 1</h3>
+                            <p>Lo-Fi, Chillhop, and electronic beats for working.</p>
+                        </div>
+                        <div class="card-vertical">
+                            <div class="img-container">
+                                <img src="https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=200" alt="Mix Cover">
+                                <button class="play-badge"><i class="fa-solid fa-play"></i></button>
+                            </div>
+                            <h3>Discover Weekly</h3>
+                            <p>Your weekly mixtape of fresh, handpicked music.</p>
+                        </div>
+                    </div>
+                </section>
+                <!-- Bottom Playback Control Bar -->
+                <div class="player-bar">
+                    <!-- Current Track Info -->
+                    <div class="track-info">
+                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=80" alt="Current Album" class="now-playing-img">
+                        <div class="track-details">
+                            <a href="#" class="track-title">Midnight City</a>                    <a href="#" class="track-artist">M83</a>
+                        </div>
+                        <button class="icon-btn heart-btn"><i class="fa-regular fa-heart"></i></button>
+                    </div>
+
+                    <!-- Central Player Controls -->        
+                    <div class="player-controls">
+                        <div class="control-buttons">
+                            <button class="icon-btn"><i class="fa-solid fa-shuffle"></i></button>
+                            <button class="icon-btn"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="icon-btn play-main" id="mainPlayBtn"><i class="fa-solid fa-circle-play"></i></button>
+                            <button class="icon-btn"><i class="fa-solid fa-forward-step"></i></button>
+                            <button class="icon-btn"><i class="fa-solid fa-repeat"></i></button>
+                        </div>
+                        <div class="progress-container">
+                            <span class="time">1:24</span>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 40%;"></div>
+                            </div>
+                            <span class="time">3:45</span>
+                        </div>
+                    </div>
+
+                    <!-- Volume & Utility Controls -->
+                    <div class="volume-controls">
+                        <button class="icon-btn"><i class="fa-solid fa-microphone"></i></button>
+                        <button class="icon-btn"><i class="fa-solid fa-list"></i></button>
+                        <button class="icon-btn"><i class="fa-solid fa-laptop-code"></i></button>
+                        <button class="icon-btn"><i class="fa-solid fa-volume-high"></i></button>
+                        <div class="volume-bar">
+                            <div class="progress" style="width: 70%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </dispA>
     </main>
 </body>
 </html>

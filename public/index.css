@@ -36,18 +36,20 @@ header{
 #search-form{
     width:80%;
     align-content:center;
+    padding-left:40px;
+    margin-left:30%;
 }
 
 input#search{
     height:60%;
-    width:90%;
+    width:60%;
     border-radius:20px;
     border:none;
     padding-right:50px;
     padding-left:50px;
 }
 
-main{
+.the-rest{
     display: flex;
     flex-direction: row;
     height: calc(100vh - 85px);
@@ -74,10 +76,12 @@ main{
 #first-lv{
     width:70px;
     justify-content: space-between;
+    padding-top:15px;
 }
 
 #second-lv{
     width:100%;
+    padding-top: 20px;
 }
 
 #dispA{
@@ -141,4 +145,319 @@ main{
     text-align: left;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+
+
+
+/* --- MAIN CONTENT --- */
+.main-content{
+    display:flex;
+    flex-direction:row;
+    width:100%;
+    padding:1%;
+}
+
+#main{
+    flex: 1;
+    background:transparents;
+    border-radius: 8px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.circle-btn {
+    background-color: rgb(0, 0, 0);
+    border: none;
+    color: #b3b3b3;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.content-section {
+    margin-bottom: 32px;
+}
+
+.content-section h2 {
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+
+/* Grid Layouts */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+/* Horizontal Card */
+.card-horizontal {
+    background-color: rgba(230, 226, 1, 0.568);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.card-horizontal:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.card-horizontal img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+.card-horizontal span {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.play-hover {
+    background-color: #1db954;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: absolute;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(8px);
+}
+
+.card-horizontal:hover .play-hover {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Vertical Cards Grid */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+}
+
+.card-vertical {
+    background-color: #51ff51b2;
+    padding: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.card-vertical:hover {
+    background-color: #a36a6a;
+}
+
+.img-container {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.card-vertical img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.play-badge {
+    background-color: #1db954;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+}
+
+.card-vertical:hover .play-badge {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.card-vertical h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-vertical p {
+    color: #b3b3b3;
+    font-size: 12px;
+    line-height: 18px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- BOTTOM PLAYER BAR --- */
+.player-bar {
+    height: 90px;
+    background-color: #181818;
+    border-top: 1px solid #282828;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+/* Left Section: Track Info */
+.track-info {
+    display: flex;
+    align-items: center;
+    width: 30%;
+    min-width: 180px;
+}
+
+.now-playing-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 4px;
+    margin-right: 14px;
+    object-fit: cover;
+}
+
+.track-details {
+    display: flex;
+    flex-direction: column;
+    margin-right: 16px;
+}
+
+.track-title {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.track-title:hover {
+    text-decoration: underline;
+}
+
+.track-artist {
+    color: #b3b3b3;
+    text-decoration: none;
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.track-artist:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+/* Central Controls */
+.player-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40%;
+    max-width: 722px;
+}
+
+.control-buttons {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 8px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.1s;
+}
+
+.icon-btn:hover {
+    color: #ffffff;
+}
+
+.play-main {
+    color: #ffffff;
+    font-size: 32px;
+}
+
+.play-main:hover {
+    transform: scale(1.06);
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.time {
+    font-size: 11px;
+    color: #b3b3b3;
+    min-width: 30px;
+    text-align: center;
+}
+
+.progress-bar, .volume-bar {
+    flex: 1;
+    height: 4px;
+    background-color: #4d4d4d;
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+.progress {
+    height: 100%;
+    background-color: #ffffff;
+    border-radius: 2px;
+    transition: background-color 0.1s;
+}
+
+.progress-bar:hover .progress, .volume-bar:hover .progress {
+    background-color: #1db954;
+}
+
+/* Right Controls */
+.volume-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    width: 30%;
+    min-width: 180px;
+}
+
+.volume-bar {
+    max-width: 100px;
 }
