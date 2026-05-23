@@ -1,32 +1,11 @@
-const STORAGE_KEYS = {
-    favorites: "beatz_flow_favorites",
-    uploads: "beatz_flow_uploads",
-    auth: "beatz_flow_auth"
-};
-
-const DEFAULT_FAVORITES = [{ id: "song-1", title: "Midnight City", artist: "M83" }];
-const DEFAULT_UPLOADS = [{ id: "up-1", title: "Sample Community Beat", artist: "Prod. Unknown", filename: "sample-community-beat.mp3" }];
-
-function loadJson(key, fallback) {
-    try {
-        const raw = localStorage.getItem(key);
-        if (!raw) return fallback;
-        return JSON.parse(raw);
-    } catch {
-        return fallback;
-    }
-}
-
-function saveJson(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-
-}
+const STORAGE_KEYS = { auth: "beatz_flow_auth" };
 
 (() => {
-    let favoriteTracks = loadJson(STORAGE_KEYS.favorites, [...DEFAULT_FAVORITES]);
-    let uploadedTracks = loadJson(STORAGE_KEYS.uploads, [...DEFAULT_UPLOADS]);
-    let selectedFile = null;
-    let isPlaying = false;
+    // Hidden Global HTML5 Audio Player Engine Context
+    const activeAudioEngine = new Audio();
+    let currentActiveTracklist = [];
+    let activeTrackIndex = 0;
+    let selectedFilePayload = null;
 
     const elements = {
         btnListen: document.getElementById("listen"),
@@ -43,364 +22,312 @@ function saveJson(key, value) {
         menuContribute: document.getElementById("contribute-s"),
         menuSettings: document.getElementById("settings-menu"),
         menuQuicky: document.getElementById("quicky-menu"),
-        quickyAddableList: document.getElementById("quicky-addable-list"),
         viewHome: document.getElementById("view-home"),
         viewBrowse: document.getElementById("view-browse"),
-        viewPlaylists: document.getElementById("view-playlists"),
         viewUpload: document.getElementById("view-upload"),
         viewSettings: document.getElementById("view-settings"),
         btnMyMusic: document.getElementById("my-music"),
         btnTopCharts: document.getElementById("top-charts"),
-        btnManageUp: document.getElementById("manage-up"),
         btnGeneralSettings: document.getElementById("general-settings"),
-        manageModal: document.getElementById("manage-uploads-modal"),
-        closeManageModal: document.getElementById("close-manage-modal"),
-        userUploadsList: document.getElementById("user-uploads-list"),
         uploadForm: document.getElementById("uploadForm"),
         audioFileInput: document.getElementById("audioFile"),
         dropZone: document.getElementById("dropZone"),
         dropZoneText: document.getElementById("dropZoneText"),
         progressBarContainer: document.getElementById("uploadProgressContainer"),
         progressBar: document.getElementById("uploadProgressBar"),
-        songRowPlayBtn: document.getElementById("playBtn"),
+        songDisplaySection: document.getElementById("listofsongs"),
         mainPlayBtn: document.getElementById("mainPlayBtn"),
         heartBtn: document.querySelector(".heart-btn"),
-        downloadBtn: document.getElementById("downloadBtn"),
-        shareBtn: document.getElementById("shareBtn"),
-        clearCacheBtn: document.querySelector(".purge-cache-btn"),
+        globalSearchField: document.getElementById("search"),
+        globalSearchForm: document.getElementById("search-form"),
         loginForm: document.getElementById("login-form"),
-        signupForm: document.getElementById("signup-form")
+        signupForm: document.getElementById("signup-form"),
+        
+        // Footer Tracking Elements
+        footerTitle: document.querySelector(".player-bar .track-title"),
+        footerArtist: document.querySelector(".player-bar .track-artist"),
+        footerTimeCurrent: document.querySelector(".player-controls .time:first-child"),
+        footerTimeDuration: document.querySelector(".player-controls .time:last-child"),
+        footerProgressBar: document.querySelector(".player-controls .progress"),
+        footerVolumeBar: document.querySelector(".volume-bar .progress")
     };
 
-    const viewPanels = [elements.viewHome, elements.viewBrowse, elements.viewPlaylists, elements.viewUpload, elements.viewSettings];
+    const viewPanels = [elements.viewHome, elements.viewBrowse, elements.viewUpload, elements.viewSettings];
 
-    function showAlert(message) {
-        window.alert(message);
-    }
-
-    function saveFavorites() {
-        saveJson(STORAGE_KEYS.favorites, favoriteTracks);
-    }
-
-    function saveUploads() {
-        saveJson(STORAGE_KEYS.uploads, uploadedTracks);
-    }
-
-    function saveAuth(user) {
-        saveJson(STORAGE_KEYS.auth, user);
-        updateAccountButton();
-    }
+    function showAlert(msg) { window.alert(msg); }
 
     function switchActiveWorkspaceView(targetViewPanel) {
-        viewPanels.forEach((panel) => {
-            if (!panel) return;
-            panel.classList.toggle("hidden", panel !== targetViewPanel);
-        });
+        viewPanels.forEach((panel) => { if (panel) panel.classList.toggle("hidden", panel !== targetViewPanel); });
     }
 
     function toggleSecondLevelView(activeTarget) {
         const targets = [elements.menuListen, elements.menuContribute, elements.menuSettings, elements.menuQuicky];
-        const anyVisible = targets.some((target) => target === activeTarget);
-
-        targets.forEach((target) => {
-            if (!target) return;
-            target.classList.toggle("hidden", target !== activeTarget);
-        });
-
-        if (elements.secondLvContainer) {
-            elements.secondLvContainer.classList.toggle("active-open", anyVisible);
-        }
+        const anyVisible = targets.some((t) => t === activeTarget);
+        targets.forEach((t) => { if (t) t.classList.toggle("hidden", t !== activeTarget); });
+        if (elements.secondLvContainer) elements.secondLvContainer.classList.toggle("active-open", anyVisible);
     }
 
-    function showLoginTab() {
-        if (elements.authModal) elements.authModal.setAttribute("data-view", "login");
-        if (elements.tabLogin) elements.tabLogin.classList.add("active");
-        if (elements.tabSignup) elements.tabSignup.classList.remove("active");
-    }
+    // Audio Control Suite
+    function loadAndPlayTrack(index) {
+        if (!currentActiveTracklist[index]) return;
+        activeTrackIndex = index;
+        const track = currentActiveTracklist[index];
 
-    function showSignupTab() {
-        if (elements.authModal) elements.authModal.setAttribute("data-view", "signup");
-        if (elements.tabSignup) elements.tabSignup.classList.add("active");
-        if (elements.tabLogin) elements.tabLogin.classList.remove("active");
-    }
+        activeAudioEngine.src = track.audio_url;
+        activeAudioEngine.play()
+            .then(() => updatePlaybackUi(true))
+            .catch((e) => showAlert("Playback streaming block caught: " + e.message));
 
-    function openAuthModal() {
-        if (!elements.authModal) return;
-        elements.authModal.classList.remove("hidden");
-        showLoginTab();
-    }
-
-    function closeAuthModal() {
-        if (!elements.authModal) return;
-        elements.authModal.classList.add("hidden");
-    }
-
-    function buildQuickyAddables() {
-        if (!elements.quickyAddableList) return;
-        elements.quickyAddableList.innerHTML = "";
-
-        if (!favoriteTracks.length) {
-            elements.quickyAddableList.innerHTML = '<p class="empty-fallback">No tracks pinned yet.</p>';
-            return;
-        }
-
-        favoriteTracks.forEach((track) => {
-            const item = document.createElement("div");
-            item.className = "quicky-shortcut-item";
-            item.innerHTML = `
-                <div class="quicky-shortcut-meta">
-                    <span class="quicky-shortcut-title">🎵 ${track.title}</span>
-                    <span class="quicky-shortcut-artist">${track.artist}</span>
-                </div>
-                <button type="button" class="quicky-remove-btn" title="Remove Shortcut">✕</button>
-            `;
-
-            item.querySelector(".quicky-remove-btn").addEventListener("click", (event) => {
-                event.stopPropagation();
-                favoriteTracks = favoriteTracks.filter((entry) => entry.id !== track.id);
-                saveFavorites();
-                buildQuickyAddables();
-            });
-
-            elements.quickyAddableList.appendChild(item);
-        });
-    }
-
-    function renderUploadedTracks() {
-        if (!elements.userUploadsList) return;
-        elements.userUploadsList.innerHTML = "";
-
-        if (!uploadedTracks.length) {
-            elements.userUploadsList.innerHTML = '<p class="empty-fallback" style="margin-top:20px;">You haven\'t uploaded any songs yet.</p>';
-            return;
-        }
-
-        uploadedTracks.forEach((track) => {
-            const item = document.createElement("div");
-            item.className = "quicky-shortcut-item";
-            item.innerHTML = `
-                <div class="quicky-shortcut-meta" style="max-width: 75%;">
-                    <span class="quicky-shortcut-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${track.title}</span>
-                    <span class="quicky-shortcut-artist">${track.artist}</span>
-                </div>
-                <button type="button" class="quicky-remove-btn delete-upload-btn" data-id="${track.id}">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
-            `;
-
-            item.querySelector(".delete-upload-btn").addEventListener("click", () => {
-                if (!confirm(`Are you sure you want to delete "${track.title}"?`)) return;
-                uploadedTracks = uploadedTracks.filter((entry) => entry.id !== track.id);
-                saveUploads();
-                renderUploadedTracks();
-            });
-
-            elements.userUploadsList.appendChild(item);
-        });
-    }
-
-    function updateAccountButton() {
-        if (!elements.btnAuthTrigger) return;
-        const user = loadJson(STORAGE_KEYS.auth, null);
-        elements.btnAuthTrigger.textContent = user?.username ? user.username.substring(0,2).toUpperCase() : "Sign In";
-        elements.btnAuthTrigger.title = user?.username ? `Signed in as ${user.username}` : "Account Options";
-        elements.btnAuthTrigger.style.backgroundColor = user?.username ? "#1db954" : "#282828";
-    }
-
-    function handleFileSelection(file) {
-        if (!file) return;
-        if (!/^audio\/(mpeg|mp3)$/.test(file.type)) {
-            showAlert("Invalid file format. Please upload a valid MP3 file.");
-            return;
-        }
-
-        selectedFile = file;
-        if (elements.dropZoneText) {
-            elements.dropZoneText.innerText = `Selected: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
-            elements.dropZoneText.style.color = "#1db954";
-        }
+        if (elements.footerTitle) elements.footerTitle.textContent = track.title;
+        if (elements.footerArtist) elements.footerArtist.textContent = track.artist;
     }
 
     function togglePlayback() {
-        isPlaying = !isPlaying;
+        if (!activeAudioEngine.src) {
+            if (currentActiveTracklist.length > 0) loadAndPlayTrack(0);
+            return;
+        }
+        if (activeAudioEngine.paused) {
+            activeAudioEngine.play().then(() => updatePlaybackUi(true));
+        } else {
+            activeAudioEngine.pause();
+            updatePlaybackUi(false);
+        }
+    }
+
+    function updatePlaybackUi(isPlaying) {
         const iconClass = isPlaying ? "fa-solid fa-circle-pause" : "fa-solid fa-circle-play";
+        if (elements.mainPlayBtn) elements.mainPlayBtn.innerHTML = `<i class="${iconClass}"></i>`;
+        
+        // Synchronize row button icons
+        document.querySelectorAll(".row-play-trigger").forEach((btn, idx) => {
+            btn.innerHTML = `<i class="${idx === activeTrackIndex && isPlaying ? 'fa-solid fa-circle-pause' : 'fa-solid fa-circle-play'}"></i>`;
+        });
+    }
 
-        if (elements.songRowPlayBtn?.querySelector("i")) {
-            elements.songRowPlayBtn.querySelector("i").className = iconClass;
-        }
-        if (elements.mainPlayBtn?.querySelector("i")) {
-            elements.mainPlayBtn.querySelector("i").className = iconClass;
+    // Handle Metadata Realtime Lookups
+    async function refreshLibraryContents(searchString = "") {
+        try {
+            const target = searchString ? `/api/tracks?search=${encodeURIComponent(searchString)}` : '/api/tracks';
+            const response = await fetch(target);
+            const tracks = await response.json();
+            
+            currentActiveTracklist = tracks;
+            renderDynamicTrackRows(tracks);
+        } catch (err) {
+            console.error("Failed fetching database maps: ", err);
         }
     }
 
-    async function handleLoginSubmit(event) {
-        event.preventDefault();
-        const email = document.getElementById("login-email")?.value.trim();
-        const password = document.getElementById("login-password")?.value;
-
-        if (!email || !password) {
-            showAlert("Email and password are required.");
+    function renderDynamicTrackRows(tracks) {
+        if (!elements.songDisplaySection) return;
+        
+        // Retain original header structure
+        elements.songDisplaySection.innerHTML = `<h2>Catalog Library Collections</h2>`;
+        
+        if (tracks.length === 0) {
+            elements.songDisplaySection.innerHTML += `<p class="empty-fallback" style="padding: 20px;">No matching digital binaries mapped.</p>`;
             return;
         }
 
-        try {
-            const response = await fetch('/api/login', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
+        tracks.forEach((track, index) => {
+            const bar = document.createElement("div");
+            bar.className = "song-bar";
+            bar.innerHTML = `
+                <div class="song-info">
+                    <div class="song-title">${track.title}</div>
+                    <span class="song-artist">${track.artist}</span>
+                </div>
+                <div class="play-btn row-play-trigger" data-index="${index}">
+                    <i class="fa-solid fa-circle-play"></i> 
+                </div>
+                <div class="download-btn download-trigger" data-url="${track.audio_url}" data-title="${track.title}">
+                    <i class="fa-solid fa-download"></i>
+                </div>
+            `;
+
+            bar.querySelector(".row-play-trigger").addEventListener("click", () => loadAndPlayTrack(index));
+            bar.querySelector(".download-trigger").addEventListener("click", (e) => {
+                e.stopPropagation();
+                const link = document.createElement('a');
+                link.href = track.audio_url;
+                link.download = `${track.title}.mp3`;
+                link.target = "_blank";
+                link.click();
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Login configuration error.");
-            }
-
-            saveAuth({ username: data.username, email: data.user });
-            closeAuthModal();
-            showAlert(`Welcome back, ${data.username}!`);
-        } catch (err) {
-            showAlert(err.message);
-        }
-    }
-
-    async function handleSignupSubmit(event) {
-        event.preventDefault();
-        const username = document.getElementById("signup-username")?.value.trim();
-        const email = document.getElementById("signup-email")?.value.trim();
-        const password = document.getElementById("signup-password")?.value;
-
-        if (!username || !email || !password) {
-            showAlert("All fields are required.");
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/signup', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, username, password })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Registration failed.");
-            }
-
-            showAlert("Account registered successfully! Please log in.");
-            showLoginTab();
-        } catch (err) {
-            showAlert(err.message);
-        }
+            elements.songDisplaySection.appendChild(bar);
+        });
     }
 
     // Event Wireframe Bindings
-    if (elements.btnListen) elements.btnListen.addEventListener("click", () => toggleSecondLevelView(elements.menuListen));
-    if (elements.btnContribute) {
-        elements.btnContribute.addEventListener("click", () => {
-            switchActiveWorkspaceView(elements.viewUpload);
-            toggleSecondLevelView(null);
-        });
-    }
-    if (elements.btnSettings) {
-        elements.btnSettings.addEventListener("click", () => {
-            switchActiveWorkspaceView(elements.viewSettings);
-            toggleSecondLevelView(elements.menuSettings);
-        });
-    }
-    if (elements.btnQuicky) {
-        elements.btnQuicky.addEventListener("click", () => {
-            toggleSecondLevelView(elements.menuQuicky);
-            buildQuickyAddables();
-        });
-    }
+    activeAudioEngine.addEventListener("timeupdate", () => {
+        if (isNaN(activeAudioEngine.duration)) return;
+        const current = activeAudioEngine.currentTime;
+        const duration = activeAudioEngine.duration;
+        
+        const pct = (current / duration) * 100;
+        if (elements.footerProgressBar) elements.footerProgressBar.style.width = `${pct}%`;
+        
+        const formatTime = (secs) => {
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        };
+        if (elements.footerTimeCurrent) elements.footerTimeCurrent.textContent = formatTime(current);
+        if (elements.footerTimeDuration) elements.footerTimeDuration.textContent = formatTime(duration);
+    });
 
-    if (elements.btnMyMusic) elements.btnMyMusic.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewHome); toggleSecondLevelView(null); });
-    if (elements.btnTopCharts) elements.btnTopCharts.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewBrowse); toggleSecondLevelView(null); });
-    if (elements.btnGeneralSettings) elements.btnGeneralSettings.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewSettings); toggleSecondLevelView(null); });
+    activeAudioEngine.addEventListener("ended", () => {
+        if (activeTrackIndex + 1 < currentActiveTracklist.length) {
+            loadAndPlayTrack(activeTrackIndex + 1);
+        } else {
+            updatePlaybackUi(false);
+        }
+    });
 
-    if (elements.btnManageUp) {
-        elements.btnManageUp.addEventListener("click", () => {
-            renderUploadedTracks();
-            if (elements.manageModal) elements.manageModal.classList.remove("hidden");
-        });
-    }
-    if (elements.closeManageModal) elements.closeManageModal.addEventListener("click", () => { if (elements.manageModal) elements.manageModal.classList.add("hidden"); });
-    if (elements.manageModal) elements.manageModal.addEventListener("click", (e) => { if (e.target === elements.manageModal) elements.manageModal.classList.add("hidden"); });
-
-    if (elements.btnAuthTrigger) elements.btnAuthTrigger.addEventListener("click", openAuthModal);
-    if (elements.closeAuthModal) elements.closeAuthModal.addEventListener("click", closeAuthModal);
-    if (elements.authModal) elements.authModal.addEventListener("click", (e) => { if (e.target === elements.authModal) closeAuthModal(); });
-
-    if (elements.tabLogin) elements.tabLogin.addEventListener("click", showLoginTab);
-    if (elements.tabSignup) elements.tabSignup.addEventListener("click", showSignupTab);
-
-    if (elements.dropZone && elements.audioFileInput) {
-        elements.dropZone.addEventListener("click", () => elements.audioFileInput.click());
-        elements.audioFileInput.addEventListener("change", (e) => { if (e.target.files.length > 0) handleFileSelection(e.target.files[0]); });
-        elements.dropZone.addEventListener("dragover", (e) => { e.preventDefault(); elements.dropZone.style.borderColor = "#1db954"; });
-        elements.dropZone.addEventListener("dragleave", () => elements.dropZone.style.borderColor = "#404040");
-        elements.dropZone.addEventListener("drop", (e) => {
-            e.preventDefault();
-            elements.dropZone.style.borderColor = "#404040";
-            if (e.dataTransfer.files.length > 0) handleFileSelection(e.dataTransfer.files[0]);
-        });
-    }
-
+    // Handle Upload Pipelines (File Conversion To Base64 Elements)
     if (elements.uploadForm) {
         elements.uploadForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            if (!selectedFile) { showAlert("Please select an MP3 file first."); return; }
+            if (!selectedFilePayload) return showAlert("Please choose an operational file payload.");
+
             const title = document.getElementById("trackTitle")?.value.trim();
             const artist = document.getElementById("trackArtist")?.value.trim();
 
             if (elements.progressBarContainer) elements.progressBarContainer.classList.remove("hidden");
-            if (elements.progressBar) elements.progressBar.style.width = "40%";
+            if (elements.progressBar) elements.progressBar.style.width = "20%";
 
-            setTimeout(() => {
-                uploadedTracks.unshift({ id: `up-${Date.now()}`, title, artist, filename: selectedFile.name });
-                saveUploads();
-                if (elements.progressBar) elements.progressBar.style.width = "100%";
-                showAlert("Track published locally!");
-                elements.uploadForm.reset();
-                selectedFile = null;
-                if (elements.progressBarContainer) elements.progressBarContainer.classList.add("hidden");
-                renderUploadedTracks();
-            }, 1000);
+            const fileReader = new FileReader();
+            fileReader.readAsDataURL(selectedFilePayload);
+            fileReader.onload = async () => {
+                try {
+                    const rawBase64 = fileReader.result.split(',')[1];
+                    if (elements.progressBar) elements.progressBar.style.width = "50%";
+
+                    const res = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title, artist,
+                            fileData: rawBase64,
+                            fileName: selectedFilePayload.name,
+                            fileType: selectedFilePayload.type
+                        })
+                    });
+
+                    const outcome = await res.json();
+                    if (!res.ok) throw new Error(outcome.error || "Upload pipeline fault.");
+
+                    if (elements.progressBar) elements.progressBar.style.width = "100%";
+                    showAlert("Binary distributed globally to Edge storage network rings!");
+                    
+                    elements.uploadForm.reset();
+                    selectedFilePayload = null;
+                    if (elements.dropZoneText) elements.dropZoneText.innerText = "Click or drag an MP3 audio track container here";
+                    
+                    switchActiveWorkspaceView(elements.viewHome);
+                    refreshLibraryContents();
+                } catch (err) {
+                    showAlert(err.message);
+                } finally {
+                    if (elements.progressBarContainer) elements.progressBarContainer.classList.add("hidden");
+                }
+            };
         });
     }
 
-    if (elements.songRowPlayBtn) elements.songRowPlayBtn.addEventListener("click", togglePlayback);
+    // Search Operations Interception Block
+    if (elements.globalSearchForm) {
+        elements.globalSearchForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            refreshLibraryContents(elements.globalSearchField?.value.trim());
+        });
+    }
+    if (elements.globalSearchField) {
+        elements.globalSearchField.addEventListener("input", (e) => {
+            refreshLibraryContents(e.target.value.trim());
+        });
+    }
+
+    // Account State Sync Subsystems
+    async function runAuthenticationRequest(endpoint, payload) {
+        const response = await fetch(`/api/${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Authentication structural failure.");
+        
+        localStorage.setItem(STORAGE_KEYS.auth, JSON.stringify(data));
+        updateProfileInterfaceElements();
+        closeAuthModal();
+        showAlert(`Session assigned successfully. Welcome ${data.username}!`);
+    }
+
+    function updateProfileInterfaceElements() {
+        const raw = localStorage.getItem(STORAGE_KEYS.auth);
+        if (!elements.btnAuthTrigger) return;
+        if (raw) {
+            const profile = JSON.parse(raw);
+            elements.btnAuthTrigger.textContent = profile.username ? profile.username.substring(0, 2).toUpperCase() : "USR";
+            elements.btnAuthTrigger.style.backgroundColor = "#1db954";
+        } else {
+            elements.btnAuthTrigger.textContent = "Sign In";
+            elements.btnAuthTrigger.style.backgroundColor = "#282828";
+        }
+    }
+
+    if (elements.loginForm) {
+        elements.loginForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            runAuthenticationRequest("login", {
+                email: document.getElementById("login-email")?.value.trim(),
+                password: document.getElementById("login-password")?.value
+            });
+        });
+    }
+
+    if (elements.signupForm) {
+        elements.signupForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            runAuthenticationRequest("signup", {
+                username: document.getElementById("signup-username")?.value.trim(),
+                email: document.getElementById("signup-email")?.value.trim(),
+                password: document.getElementById("signup-password")?.value
+            });
+        });
+    }
+
+    // Navigation Wireframing Hooks
+    if (elements.btnListen) elements.btnListen.addEventListener("click", () => toggleSecondLevelView(elements.menuListen));
+    if (elements.btnContribute) elements.btnContribute.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewUpload); toggleSecondLevelView(null); });
+    if (elements.btnSettings) elements.btnSettings.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewSettings); toggleSecondLevelView(elements.menuSettings); });
+    if (elements.btnQuicky) elements.btnQuicky.addEventListener("click", () => toggleSecondLevelView(elements.menuQuicky));
+    if (elements.btnMyMusic) elements.btnMyMusic.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewHome); toggleSecondLevelView(null); });
+    if (elements.btnTopCharts) elements.btnTopCharts.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewBrowse); toggleSecondLevelView(null); });
+    if (elements.btnGeneralSettings) elements.btnGeneralSettings.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewSettings); toggleSecondLevelView(null); });
+    if (elements.btnAuthTrigger) elements.btnAuthTrigger.addEventListener("click", () => { elements.authModal?.classList.remove("hidden"); showLoginTab(); });
+    if (elements.closeAuthModal) elements.closeAuthModal.addEventListener("click", () => elements.authModal?.classList.add("hidden"));
+    if (elements.tabLogin) elements.tabLogin.addEventListener("click", showLoginTab);
+    if (elements.tabSignup) elements.tabSignup.addEventListener("click", () => { elements.authModal?.setAttribute("data-view", "signup"); elements.tabSignup.classList.add("active"); elements.tabLogin.classList.remove("active"); });
     if (elements.mainPlayBtn) elements.mainPlayBtn.addEventListener("click", togglePlayback);
 
-    if (elements.heartBtn) {
-        elements.heartBtn.addEventListener("click", () => {
-            const icon = elements.heartBtn.querySelector("i");
-            icon.classList.toggle("fa-regular");
-            icon.classList.toggle("fa-solid");
-            elements.heartBtn.style.color = icon.classList.contains("fa-solid") ? "#1db954" : "#b3b3b3";
+    if (elements.dropZone && elements.audioFileInput) {
+        elements.dropZone.addEventListener("click", () => elements.audioFileInput.click());
+        elements.audioFileInput.addEventListener("change", (e) => {
+            if (e.target.files.length > 0) {
+                selectedFilePayload = e.target.files[0];
+                if (elements.dropZoneText) elements.dropZoneText.innerText = `Ready to Stream: ${selectedFilePayload.name}`;
+            }
         });
     }
 
-    if (elements.clearCacheBtn) {
-        elements.clearCacheBtn.addEventListener("click", () => {
-            localStorage.clear();
-            favoriteTracks = [...DEFAULT_FAVORITES];
-            uploadedTracks = [...DEFAULT_UPLOADS];
-            saveFavorites(); saveUploads();
-            buildQuickyAddables(); renderUploadedTracks(); updateAccountButton();
-            showAlert("Cache indices purged.");
-        });
-    }
+    function showLoginTab() { elements.authModal?.setAttribute("data-view", "login"); elements.tabLogin?.classList.add("active"); elements.tabSignup?.classList.remove("active"); }
 
-    if (elements.loginForm) elements.loginForm.addEventListener("submit", handleLoginSubmit);
-    if (elements.signupForm) elements.signupForm.addEventListener("submit", handleSignupSubmit);
-
-    // Initial Processing Engines
-    buildQuickyAddables();
-    renderUploadedTracks();
-    updateAccountButton();
+    // Bootstrap Initialization 
+    updateProfileInterfaceElements();
     switchActiveWorkspaceView(elements.viewHome);
-    toggleSecondLevelView(null);
+    refreshLibraryContents();
 })();
