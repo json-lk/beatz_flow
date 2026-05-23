@@ -1,3 +1,8 @@
+// Ensure this is initialized with your credentials before the DOM event fires
+const supabaseUrl = 'https://xqihscjovjtgvvhbvcfn.supabase.co';
+const supabaseKey = 'sb_publishable_vNYWCu6wtVZEOea1im3q5Q_mmzd6ka6';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
 document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 1. DATA CORE & PERSISTENT STATES
