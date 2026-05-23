@@ -13,18 +13,45 @@
         <form id="search-form">
             <input type="text" id="search" placeholder="Search for music, artists, albums...">
         </form>
-        <div id="acc-button">
-            <button type="button"></button>
+        <div id="header-account-space">
+            <div id="acc-button">
+                <button type="button" id="auth-trigger-btn" title="Account Options"></button>
+            </div>            
         </div>
     </header>
-    <!-- Example Login Form Modal inside index.html -->
-    <div id="login-modal" class="modal">
-        <form id="login-form">
-            <h3>Login to Beatz_Flow</h3>
-            <input type="email" id="login-email" placeholder="Email Address" required />
-            <input type="password" id="login-password" placeholder="Password" required />
-            <button type="submit" id="login-submit-btn">Sign In</button>
-        </form>
+
+    <!-- AUTH MODAL HUB (Login & Signup) -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content auth-box">
+            <div class="auth-tabs">
+                <button type="button" id="tab-login" class="auth-tab-btn active" >Log In</button>
+                <button type="button" id="tab-signup" class="auth-tab-btn">Sign Up</button>
+                <button type="button" id="close-auth-modal" class="close-x-btn">✕</button>
+            </div>
+
+            <!-- Login Form Wrapper -->
+            <div id="login-form-container">
+                <form id="login-form-container" class="auth-form-panel">
+                    <h3>Login to Beatz_Flow</h3>
+                    <input type="email" id="login-email" placeholder="Email Address" required class="form-input" />
+                    <input type="password" id="login-password" placeholder="Password" required class="form-input" />
+                    <button type="submit" id="login-submit-btn" class="submit-publish-btn">Sign In</button>
+                    <p>Don't have an account? <a href="#" id="switch-to-signup">Sign Up</a></p>
+                </form>
+            </div>
+
+            <!-- Signup Form Wrapper (Hidden by default) -->
+            <div id="signup-form-container" >
+                <form id="signup-form" class="auth-form-panel">
+                    <h3>Create Your Account</h3>
+                    <input type="text" id="signup-username" placeholder="Choose a Username" required class="form-input" />
+                    <input type="email" id="signup-email" placeholder="Email Address" required class="form-input" />
+                    <input type="password" id="signup-password" placeholder="Create Password" required class="form-input" />
+                    <button type="submit" id="signup-submit-btn" class="submit-publish-btn">Register</button>
+                    <p>Already have an account? <a href="#" id="switch-to-login">Log In</a></p>
+                </form>
+            </div>
+        </div>
     </div>
 
     <main class="the-rest">
@@ -289,7 +316,6 @@
     </div>
 
     <script src="js/index.js"></script>
-    <!-- Add this near the bottom of your index.html -->
-    <script src="js/main.js" defer></script>
+    <script src="functions/api/main.js" defer></script>
 </body>
 </html>

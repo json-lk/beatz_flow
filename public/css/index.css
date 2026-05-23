@@ -35,10 +35,14 @@ header {
 }
 
 #acc-button {
-    width: 6%;
+    width: 40px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
+}
+
+#header-account-space{
+    align-content: center;
 }
 
 #acc-button button {
@@ -553,6 +557,7 @@ input#search::placeholder {
     font-size: 14px; 
     box-sizing: border-box; 
     outline: none;
+    margin-bottom: 12px;
 }
 
 .progress-container-block {
@@ -594,6 +599,7 @@ input#search::placeholder {
     cursor: pointer; 
     text-transform: uppercase; 
     letter-spacing: 1px;
+    width: 100%;
 }
 
 .settings-stack { display: flex; flex-direction: column; gap: 24px; }
@@ -683,6 +689,75 @@ input#search::placeholder {
 
 #manage-uploads-modal:not(.hidden) {
     display: flex !important;
+}
+
+/* --- INTEGRATED AUTH SPLIT STYLING --- */
+.auth-box {
+    max-width: 400px;
+    padding: 32px;
+}
+
+.auth-tabs {
+    display: flex;
+    border-bottom: 2px solid #282828;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.auth-tab-btn {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.auth-tab-btn.active {
+    color: #1db954;
+    border-bottom: 2px solid #1db954;
+    margin-bottom: -2px;
+}
+
+.close-x-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.auth-form-panel h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+/* 1. Global modal wrapper close handler */
+#auth-modal.hidden {
+    display: none !important;
+}
+
+/* 2. When data-view is login: show login, hide signup */
+#auth-modal[data-view="login"] #login-form-container {
+    display: block; /* change to flex/grid if your form layout requires it */
+}
+#auth-modal[data-view="login"] #signup-form-container {
+    display: none !important;
+}
+
+/* 3. When data-view is signup: show signup, hide login */
+#auth-modal[data-view="signup"] #signup-form-container {
+    display: block; /* change to flex/grid if your form layout requires it */
+}
+#auth-modal[data-view="signup"] #login-form-container {
+    display: none !important;
 }
 
 /* --- FIXED STICKY FOOTER PLAYER MECHANISM --- */
@@ -828,5 +903,5 @@ input#search::placeholder {
 }
 
 .volume-bar {
-    max-width: 100px;
+    max-width: 120px;
 }

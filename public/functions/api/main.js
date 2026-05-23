@@ -1,4 +1,6 @@
-// Example: Sending form data from your UI dashboard directly to Cloudflare
+// public/js/main.js
+
+// Standalone authentication worker trigger
 async function submitLogin(email, password) {
     const response = await fetch('/api/login', {
         method: 'POST',
@@ -11,8 +13,6 @@ async function submitLogin(email, password) {
         console.log("Logged in successfully as:", result.user);
     }
 }
-
-// public/js/main.js
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
 
             try {
-                // 2. This line links your HTML frontend directly to /functions/api/login.js
+                // 2. This line links your HTML frontend directly to /functions/api/login.js or Worker endpoint
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
@@ -46,9 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 3. Handle the response coming back from the server
                 if (response.ok && data.success) {
                     alert(`Welcome back, ${data.user}!`);
-                    // Hide your login modal and update your dashboard view here
+                    // Hide login modal and update dashboard view here if applicable
                 } else {
-                    // Show error message returned by your backend api
+                    // Show error message returned by backend api
                     alert(`Error: ${data.error || 'Invalid login details.'}`);
                 }
 
