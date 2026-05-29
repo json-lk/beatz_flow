@@ -1,0 +1,27 @@
+{
+  "name": "beatz-flow",
+  "version": "1.0.0",
+  "description": "A modern music streaming interface built with HTML, CSS, JavaScript, and Supabase serverless functions on Vercel.",
+  "main": "js/main.js",
+  "scripts": {
+    "start": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "music-player",
+    "supabase",
+    "vercel",
+    "serverless"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "buffer": "^6.0.3"
+  },
+  "devDependencies": {
+    "vercel": "^39.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
