@@ -95,6 +95,7 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
         }
     }
 
+    // Dynamic UI state synchronizer
     function updatePlaybackUi(isPlaying) {
         const iconClass = isPlaying ? "fa-solid fa-circle-pause" : "fa-solid fa-circle-play";
         if (elements.mainPlayBtn) elements.mainPlayBtn.innerHTML = `<i class="${iconClass}"></i>`;
@@ -251,8 +252,6 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
     }
 
     // Account State Sync Subsystems
-    // Inside js/main.js authentication processing area
-    // Inside js/main.js
     async function runAuthenticationRequest(endpoint, payload) {
         try {
             const response = await fetch(`/api/${endpoint}`, {
@@ -275,10 +274,11 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
                 throw new Error(data.error || "Authentication operation halted.");
             }
 
+            // Corrected Fallback: Return early to prevent token caching bugs if sign-in is pending
             if (data.fallbackSignInRequired) {
                 showAlert(`Account created for ${data.username}! Please toggle to the Log In tab to continue.`);
                 showLoginTab();
-                return;
+                return; 
             }
 
             // Persist session token safely in local cache loop
@@ -292,7 +292,6 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
         }
     }
 
-
     function updateProfileInterfaceElements() {
         const raw = localStorage.getItem(STORAGE_KEYS.auth);
         if (!elements.btnAuthTrigger) return;
@@ -304,6 +303,10 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
             elements.btnAuthTrigger.textContent = "Sign In";
             elements.btnAuthTrigger.style.backgroundColor = "#282828";
         }
+    }
+
+    function closeAuthModal() {
+        if (elements.authModal) elements.authModal.classList.add("hidden");
     }
 
     if (elements.loginForm) {
@@ -336,7 +339,7 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
     if (elements.btnTopCharts) elements.btnTopCharts.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewBrowse); toggleSecondLevelView(null); });
     if (elements.btnGeneralSettings) elements.btnGeneralSettings.addEventListener("click", () => { switchActiveWorkspaceView(elements.viewSettings); toggleSecondLevelView(null); });
     if (elements.btnAuthTrigger) elements.btnAuthTrigger.addEventListener("click", () => { elements.authModal?.classList.remove("hidden"); showLoginTab(); });
-    if (elements.closeAuthModal) elements.closeAuthModal.addEventListener("click", () => elements.authModal?.classList.add("hidden"));
+    if (elements.closeAuthModal) elements.closeAuthModal.addEventListener("click", closeAuthModal);
     if (elements.tabLogin) elements.tabLogin.addEventListener("click", showLoginTab);
     if (elements.tabSignup) elements.tabSignup.addEventListener("click", () => { elements.authModal?.setAttribute("data-view", "signup"); elements.tabSignup.classList.add("active"); elements.tabLogin.classList.remove("active"); });
     if (elements.mainPlayBtn) elements.mainPlayBtn.addEventListener("click", togglePlayback);
