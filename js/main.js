@@ -1,4 +1,3 @@
-// js/main.js
 const STORAGE_KEYS = { auth: "beatz_flow_auth" };
 
 (() => {
@@ -147,7 +146,7 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
         });
     }
 
-    // Database Track Catalog Queries
+    // Database Track Catalog Queries (Search Pipeline Endpoint Mapping)
     async function refreshLibraryContents(searchString = "") {
         try {
             const target = searchString ? `/api/tracks?search=${encodeURIComponent(searchString)}` : '/api/tracks';
@@ -301,7 +300,7 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
         });
     }
 
-    // Binary Track Upload Pipeline Handling Flow (Direct Presigned Upload Loop)
+    // Binary Track Upload Pipeline Handling Flow (Direct-to-Storage Presigned Bypass)
     if (elements.uploadForm) {
         elements.uploadForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -316,7 +315,7 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
             if (elements.progressBar) elements.progressBar.style.width = "20%";
 
             try {
-                // 1. Fetch a presigned upload gateway tunnel from the serverless backend
+                // 1. Fetch the direct upload tunnel credentials from Vercel
                 const tokenResponse = await fetch('/api/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -324,11 +323,11 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
                 });
 
                 const tokenData = await tokenResponse.json();
-                if (!tokenResponse.ok) throw new Error(tokenData.error || "Bypass gateway initialization failed.");
+                if (!tokenResponse.ok) throw new Error(tokenData.error || "Bypass initialization failed.");
 
                 if (elements.progressBar) elements.progressBar.style.width = "50%";
 
-                // 2. Stream raw binary file directly from browser to Supabase Storage (Bypasses Vercel Proxy Limits!)
+                // 2. Upload raw binary file straight to Supabase Storage (Unlimited Size!)
                 const directUploadResponse = await fetch(tokenData.uploadUrl, {
                     method: 'PUT',
                     headers: { 'Content-Type': selectedFilePayload.type || 'audio/mpeg' },
@@ -336,12 +335,12 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
                 });
 
                 if (!directUploadResponse.ok) {
-                    throw new Error("Direct storage asset binary stream streaming failed.");
+                    throw new Error("Direct storage binary streaming failed.");
                 }
 
                 if (elements.progressBar) elements.progressBar.style.width = "80%";
 
-                // 3. Document details inside relational table using serverless metadata sync route
+                // 3. Document track metadata inside your PostgreSQL table securely via /api/tracks
                 const dbResponse = await fetch('/api/tracks', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -355,7 +354,6 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
 
                 const dbOutcome = await dbResponse.json();
                 
-                // Unpack and handle database errors cleanly to prevent [object Object] masking alerts
                 if (!dbResponse.ok) {
                     throw new Error(dbOutcome.error || "Storage complete, but database catalog logging was rejected.");
                 }
