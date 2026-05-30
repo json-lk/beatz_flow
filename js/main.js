@@ -7,6 +7,11 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
     let activeTrackIndex = 0;
     let selectedFilePayload = null;
 
+    // Advanced Audio Player States
+    let isShuffleActive = false;
+    let isRepeatActive = false;
+    let preMuteVolumeLevel = 1.0;
+
     const elements = {
         btnListen: document.getElementById("listen"),
         btnContribute: document.getElementById("contribute"),
@@ -48,7 +53,18 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
         footerArtist: document.querySelector(".player-bar .track-artist"),
         footerTimeCurrent: document.querySelector(".player-controls .time:first-child"),
         footerTimeDuration: document.querySelector(".player-controls .time:last-child"),
+        footerProgressBarContainer: document.querySelector(".player-controls .progress-bar"),
         footerProgressBar: document.querySelector(".player-controls .progress"),
+        
+        // Interactive Player Buttons
+        btnShuffle: document.querySelector(".control-buttons button:nth-child(1)"),
+        btnPrevious: document.querySelector(".control-buttons button:nth-child(2)"),
+        btnNext: document.querySelector(".control-buttons button:nth-child(4)"),
+        btnRepeat: document.querySelector(".control-buttons button:nth-child(5)"),
+        
+        // Volume Component Nodes
+        btnVolumeToggle: document.querySelector(".volume-controls button:nth-child(4)"),
+        volumeBarContainer: document.querySelector(".volume-bar"),
         footerVolumeBar: document.querySelector(".volume-bar .progress")
     };
 
@@ -95,12 +111,35 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
         }
     }
 
+    // Skip Handlers (Next and Previous)
+    function playNextTrack() {
+        if (currentActiveTracklist.length === 0) return;
+        
+        if (isShuffleActive) {
+            const randomIndex = Math.floor(Math.random() * currentActiveTracklist.length);
+            loadAndPlayTrack(randomIndex);
+        } else {
+            const nextIndex = (activeTrackIndex + 1) % currentActiveTracklist.length;
+            loadAndPlayTrack(nextIndex);
+        }
+    }
+
+    function playPreviousTrack() {
+        if (currentActiveTracklist.length === 0) return;
+        
+        if (activeAudioEngine.currentTime > 4) {
+            activeAudioEngine.currentTime = 0;
+        } else {
+            const prevIndex = (activeTrackIndex - 1 + currentActiveTracklist.length) % currentActiveTracklist.length;
+            loadAndPlayTrack(prevIndex);
+        }
+    }
+
     // Dynamic UI state synchronizer
     function updatePlaybackUi(isPlaying) {
         const iconClass = isPlaying ? "fa-solid fa-circle-pause" : "fa-solid fa-circle-play";
         if (elements.mainPlayBtn) elements.mainPlayBtn.innerHTML = `<i class="${iconClass}"></i>`;
         
-        // Synchronize row button icons
         document.querySelectorAll(".row-play-trigger").forEach((btn) => {
             const idx = parseInt(btn.getAttribute("data-index"));
             btn.innerHTML = `<i class="${idx === activeTrackIndex && isPlaying ? 'fa-solid fa-circle-pause' : 'fa-solid fa-circle-play'}"></i>`;
@@ -161,7 +200,7 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
         });
     }
 
-    // Event Wireframe Bindings
+    // Audio Player Context Event Listening Streams
     activeAudioEngine.addEventListener("timeupdate", () => {
         if (isNaN(activeAudioEngine.duration)) return;
         const current = activeAudioEngine.currentTime;
@@ -180,12 +219,89 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
     });
 
     activeAudioEngine.addEventListener("ended", () => {
-        if (activeTrackIndex + 1 < currentActiveTracklist.length) {
-            loadAndPlayTrack(activeTrackIndex + 1);
+        if (isRepeatActive) {
+            activeAudioEngine.currentTime = 0;
+            activeAudioEngine.play().catch(() => updatePlaybackUi(false));
         } else {
-            updatePlaybackUi(false);
+            playNextTrack();
         }
     });
+
+    // Timeline Scrubber Click Integration
+    if (elements.footerProgressBarContainer) {
+        elements.footerProgressBarContainer.addEventListener("click", (e) => {
+            if (!activeAudioEngine.src || isNaN(activeAudioEngine.duration)) return;
+            const bounds = elements.footerProgressBarContainer.getBoundingClientRect();
+            const clickPositionX = e.clientX - bounds.left;
+            const scrubPercentage = clickPositionX / bounds.width;
+            activeAudioEngine.currentTime = scrubPercentage * activeAudioEngine.duration;
+        });
+    }
+
+    // Volume Track Engine Management Rules
+    function setSystemVolume(targetLevel) {
+        const adjustedVolume = Math.max(0, Math.min(1, targetLevel));
+        activeAudioEngine.volume = adjustedVolume;
+        if (elements.footerVolumeBar) elements.footerVolumeBar.style.width = `${adjustedVolume * 100}%`;
+        
+        // Update volume speaker icon based on amplitude levels
+        if (!elements.btnVolumeToggle) return;
+        if (adjustedVolume === 0) {
+            elements.btnVolumeToggle.innerHTML = `<i class="fa-solid fa-volume-xmark"></i>`;
+        } else if (adjustedVolume < 0.4) {
+            elements.btnVolumeToggle.innerHTML = `<i class="fa-solid fa-volume-low"></i>`;
+        } else {
+            elements.btnVolumeToggle.innerHTML = `<i class="fa-solid fa-volume-high"></i>`;
+        }
+    }
+
+    if (elements.volumeBarContainer) {
+        elements.volumeBarContainer.addEventListener("click", (e) => {
+            const bounds = elements.volumeBarContainer.getBoundingClientRect();
+            const fillLevel = (e.clientX - bounds.left) / bounds.width;
+            setSystemVolume(fillLevel);
+            if (fillLevel > 0) preMuteVolumeLevel = fillLevel;
+        });
+    }
+
+    if (elements.btnVolumeToggle) {
+        elements.btnVolumeToggle.addEventListener("click", () => {
+            if (activeAudioEngine.volume > 0) {
+                preMuteVolumeLevel = activeAudioEngine.volume;
+                setSystemVolume(0);
+            } else {
+                setSystemVolume(preMuteVolumeLevel);
+            }
+        });
+    }
+
+    // Toggle Modes Action Hook Handlers
+    if (elements.btnShuffle) {
+        elements.btnShuffle.addEventListener("click", () => {
+            isShuffleActive = !isShuffleActive;
+            elements.btnShuffle.style.color = isShuffleActive ? "#1db954" : "#b3b3b3";
+        });
+    }
+
+    if (elements.btnRepeat) {
+        elements.btnRepeat.addEventListener("click", () => {
+            isRepeatActive = !isRepeatActive;
+            elements.btnRepeat.style.color = isRepeatActive ? "#1db954" : "#b3b3b3";
+        });
+    }
+
+    // Step Triggers Wiring hooks
+    if (elements.btnNext) elements.btnNext.addEventListener("click", playNextTrack);
+    if (elements.btnPrevious) elements.btnPrevious.addEventListener("click", playPreviousTrack);
+
+    // Heart Button Favorite Switcher
+    if (elements.heartBtn) {
+        elements.heartBtn.addEventListener("click", () => {
+            elements.heartBtn.classList.toggle("active-liked");
+            const isLiked = elements.heartBtn.classList.contains("active-liked");
+            elements.heartBtn.style.color = isLiked ? "#1db954" : "#b3b3b3";
+        });
+    }
 
     // Handle Upload Pipelines
     if (elements.uploadForm) {
@@ -217,14 +333,13 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
                         })
                     });
 
-                    // INTERCEPT ACTION: Verify if Vercel crashed out with an HTML limit screen
                     const contentType = response.headers.get("content-type");
                     if (!contentType || !contentType.includes("application/json")) {
                         const rawHtmlText = await response.text();
                         if (response.status === 413 || rawHtmlText.includes("PAYLOAD_TOO_LARGE") || response.status === 504) {
-                            throw new Error("File payload is too large! Vercel directly limits edge function body streaming sizes to 4.5MB maximum (approx 3.2MB standard audio file size).");
+                            throw new Error("File payload is too large! Vercel limits edge function size body streaming sizes to 4.5MB maximum.");
                         }
-                        throw new Error(`Server route failure (Status ${response.status}). Ensure file is small or check your Vercel logs.`);
+                        throw new Error(`Server route failure (Status ${response.status}). Check Vercel logs.`);
                     }
 
                     const outcome = await response.json();
@@ -276,19 +391,15 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
             }
 
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Authentication operation halted.");
-            }
+            if (!response.ok) throw new Error(data.error || "Authentication operation halted.");
 
             if (data.fallbackSignInRequired) {
-                showAlert(`Account created for ${data.username}! Please toggle to the Log In tab to continue.`);
+                showAlert(`Account created for ${data.username}! Please log in below.`);
                 showLoginTab();
                 return; 
             }
 
             localStorage.setItem(STORAGE_KEYS.auth, JSON.stringify(data));
-        
             updateProfileInterfaceElements();
             closeAuthModal();
             showAlert(`Successfully authenticated. Welcome back, ${data.username}!`);
@@ -372,6 +483,7 @@ const STORAGE_KEYS = { auth: "beatz_flow_auth" };
     }
 
     // Bootstrap Initialization 
+    setSystemVolume(1.0);
     updateProfileInterfaceElements();
     switchActiveWorkspaceView(elements.viewHome);
     refreshLibraryContents();

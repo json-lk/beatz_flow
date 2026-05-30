@@ -21,6 +21,20 @@ header {
     padding: 0 24px;
 }
 
+/* Custom Added Player Interactions */
+.progress-container .progress-bar,
+.volume-controls .volume-bar {
+    cursor: pointer !important;
+}
+
+.heart-btn {
+    transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.heart-btn:active {
+    transform: scale(1.2);
+}
+
 .hidden {
     display: none !important;
 }
